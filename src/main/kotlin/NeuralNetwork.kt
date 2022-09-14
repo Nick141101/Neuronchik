@@ -1,7 +1,8 @@
 class NeuralNetwork {
 
-    val listOfNeurons = mutableListOf<Neuron>()
+    private val listOfNeurons = mutableListOf<Neuron>()
     var listOfSignals = mutableListOf<Int>()
+    var nSignals = 1
 
     fun addNeuron(threshold: Int,
                   nExcitatory: Int,
@@ -9,20 +10,23 @@ class NeuralNetwork {
                   connectTo: Int, // root = -1
                   connectType: Boolean = true) { // true - excitatory, false - inhibitory
 
-        listOfNeurons.add(Neuron(threshold, nExcitatory, nInhibitory))
+        if (connectTo == -1) {
+            listOfNeurons.add(Neuron(threshold, nExcitatory, nInhibitory))
+            nSignals += (nExcitatory + nInhibitory - 1)
+            return
+        }
 
-        if (connectTo == -1) return
-
-        if (connectType) {
-            val index = listOfNeurons[connectTo].listOfExcitatory.indexOf(-1)
-            if (index > -1) {
+        val index = if (connectType) listOfNeurons[connectTo].listOfExcitatory.indexOf(-1)
+                                else listOfNeurons[connectTo].listOfInhibitory.indexOf(-1)
+        if (index > -1) {
+            listOfNeurons.add(Neuron(threshold, nExcitatory, nInhibitory))
+            nSignals += (nExcitatory + nInhibitory - 1)
+            if (connectType)
                 listOfNeurons[connectTo].listOfExcitatory[index] = listOfNeurons.lastIndex
-            }
-        } else {
-            val index = listOfNeurons[connectTo].listOfInhibitory.indexOf(-1)
-            if (index > -1) {
+            else
                 listOfNeurons[connectTo].listOfInhibitory[index] = listOfNeurons.lastIndex
-            }
+        } else {
+            println("Not enough ${if (connectType) "excitatory" else "inhibitory"} inputs")
         }
     }
 
@@ -50,10 +54,20 @@ class NeuralNetwork {
     }
 
     fun nextTick(): Int {
-        listOfSignals = readln().toMutableList().map { it.toInt() }
-        for (index in listOfNeurons.indices) {
-            newState(index)
+        while (true) {
+            listOfSignals = readln().map { it.digitToInt() }.toMutableList()
+            if (listOfSignals.isEmpty())
+                listOfSignals = MutableList(nSignals) {0}
+
+            if (listOfSignals.size != nSignals)
+                println("Incorrect input length")
+            else
+                break
         }
+
+        for (index in listOfNeurons.indices)
+            newState(index)
+
         return listOfNeurons[0].state
     }
 

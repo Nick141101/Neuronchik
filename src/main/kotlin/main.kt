@@ -9,11 +9,8 @@ fun main() {
     nn.addNeuron(3, 3, 0, 2)
     nn.addNeuron(1, 0, 1, 2)
 
-    val ans = nn.nextTick(mutableListOf(0, 1, 1, 1, 1, 0))
-    println(ans)
-
-    repeat(10) {
-        val ans = nn.nextTick(mutableListOf(false, false, false, false, false, false))
+    while (true) {
+        val ans = nn.nextTick()
         println(ans)
     }
 }
